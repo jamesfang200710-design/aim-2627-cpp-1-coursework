@@ -18,7 +18,58 @@ namespace aim::q5 {
 
 
 // BEGIN IMPLEMENTATION
-std::vector<std::vector<int>> risk(const std::vector<std::string>& grid) { throw std::runtime_error("TODO"); }
+std::vector<std::vector<int>> risk(const std::vector<std::string>& grid) {
+    std::vector<std::vector<int>> result;
+    if (grid.empty()) {
+        return result;
+    }
+
+    const std::size_t cols = grid.front().size();
+    if (cols == 0) {
+        throw std::invalid_argument("grid row is empty");
+    }
+
+    for (const std::string& row : grid) {
+        if (row.size() != cols) {
+            throw std::invalid_argument("grid rows have different lengths");
+        }
+        for (char cell : row) {
+            if (cell != '.' && cell != '#') {
+                throw std::invalid_argument("grid contains an unknown character");
+            }
+        }
+    }
+
+    const int rows = static_cast<int>(grid.size());
+    result.assign(static_cast<std::size_t>(rows),
+                  std::vector<int>(cols, 0));
+
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < static_cast<int>(cols); ++c) {
+            if (grid[static_cast<std::size_t>(r)][static_cast<std::size_t>(c)] == '#') {
+                result[static_cast<std::size_t>(r)][static_cast<std::size_t>(c)] = -1;
+                continue;
+            }
+            int count = 0;
+            if (r > 0 && grid[static_cast<std::size_t>(r - 1)][static_cast<std::size_t>(c)] == '#') {
+                ++count;
+            }
+            if (r + 1 < rows &&
+                grid[static_cast<std::size_t>(r + 1)][static_cast<std::size_t>(c)] == '#') {
+                ++count;
+            }
+            if (c > 0 && grid[static_cast<std::size_t>(r)][static_cast<std::size_t>(c - 1)] == '#') {
+                ++count;
+            }
+            if (c + 1 < static_cast<int>(cols) &&
+                grid[static_cast<std::size_t>(r)][static_cast<std::size_t>(c + 1)] == '#') {
+                ++count;
+            }
+            result[static_cast<std::size_t>(r)][static_cast<std::size_t>(c)] = count;
+        }
+    }
+    return result;
+}
 // END IMPLEMENTATION
 }
 
