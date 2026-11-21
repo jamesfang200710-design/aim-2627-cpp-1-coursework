@@ -18,7 +18,65 @@ namespace aim::q4 {
 struct CommandResult { long long value; int accepted; int rejected; };
 
 // BEGIN IMPLEMENTATION
-CommandResult execute(const std::vector<std::string>& lines) { throw std::runtime_error("TODO"); }
+namespace {
+
+const long long kLimit = 1000000;
+
+bool parse_command(const std::string& line, std::string& op, long long& x) {
+    std::istringstream in(line);
+    if (!(in >> op)) {
+        return false;
+    }
+
+    if (op == "RESET") {
+        std::string extra;
+        if (in >> extra) {
+            return false;
+        }
+        x = 0;
+        return true;
+    }
+
+    if (op != "ADD" && op != "SET") {
+        return false;
+    }
+
+    if (!(in >> x)) {
+        return false;
+    }
+    std::string extra;
+    if (in >> extra) {
+        return false;
+    }
+    return x >= -kLimit && x <= kLimit;
+}
+
+}
+
+CommandResult execute(const std::vector<std::string>& lines) {
+    CommandResult result;
+    result.value = 0;
+    result.accepted = 0;
+    result.rejected = 0;
+
+    for (const std::string& line : lines) {
+        std::string op;
+        long long x = 0;
+        if (!parse_command(line, op, x)) {
+            ++result.rejected;
+            continue;
+        }
+
+        const long long value = (op == "ADD") ? result.value + x : x;
+        if (value < -kLimit || value > kLimit) {
+            ++result.rejected;
+            continue;
+        }
+        result.value = value;
+        ++result.accepted;
+    }
+    return result;
+}
 // END IMPLEMENTATION
 }
 
